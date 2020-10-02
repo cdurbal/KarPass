@@ -2,7 +2,7 @@
     SPDX-License-Identifier: UNLICENSED"
 */
 pragma solidity ^0.7.0;
-pragma experimental ABIEncoderV2;
+//pragma experimental ABIEncoderV2;
 
 import {KarToken} from "./KarToken.sol";
 
@@ -14,11 +14,13 @@ contract KarPassport {
     /*
         Define an public owner variable. Set it to the creator of the contract when it is initialized.
     */
-    uint   PASSPORT_PRICE = 1000;
+    uint   PASSPORT_PRICE = 10;
 
     //contract info
     address payable public _owner;
     uint256 private _balance;
+    
+    address private _tokenContractAddr;
 
     // car info
     string private _name;
@@ -85,13 +87,10 @@ contract KarPassport {
     constructor(address tokenContractAddr,
                 string memory name, string memory id, string memory brand, string memory modele, uint256 year, uint256 releaseDate, 
                 string memory oilType, string memory gearbox, string memory outColor, string memory inColor, uint256 numberOfDoor, 
-                uint256 numberOfPlace, uint256 power, string[] memory options)
+                uint256 numberOfPlace, uint256 power)
     {
-        KarToken token = KarToken(tokenContractAddr);
-        require(token.balanceOf(msg.sender) >= PASSPORT_PRICE);
-        assert(token.transfer(address(this), PASSPORT_PRICE));
-        TransfertToken(msg.sender, address(this), PASSPORT_PRICE, token.balanceOf(msg.sender));
         
+        _tokenContractAddr = tokenContractAddr;
         _owner = msg.sender;
         _name=name;
         _id=id;
@@ -106,7 +105,30 @@ contract KarPassport {
         _numberOfDoor=numberOfDoor;
         _numberOfPlace=numberOfPlace;
         _power=power;
-        _options=options;
+        //_options=options;
+    }
+    
+    
+    function activate()
+    public returns (bool)
+    {
+        TransfertToken(msg.sender, address(this), PASSPORT_PRICE, 0);
+        KarToken token = KarToken(_tokenContractAddr);
+        require(token.balanceOf(msg.sender) >= PASSPORT_PRICE, "Not enought KAR");
+        TransfertToken(msg.sender, address(this), PASSPORT_PRICE, token.balanceOf(msg.sender));
+        token.transferFrom(msg.sender, address(this), PASSPORT_PRICE);
+        TransfertToken(msg.sender, address(this), PASSPORT_PRICE, token.balanceOf(msg.sender));
+        
+        _balance += PASSPORT_PRICE;
+        
+        return true;
+    }
+    
+    /**
+     * @dev Returns the name
+     */
+    function balance() public view returns (uint256) {
+        return _balance;
     }
 
 
