@@ -1,26 +1,40 @@
-pragma solidity ^0.5.0;
+pragma solidity >= 0.5.0 < 0.7.0;
 
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
 import "../contracts/KarPassport.sol";
+import "../contracts/KarToken.sol";
 
 contract TestKarPassport {
  // The address of the adoption contract to be tested
- KarPassport karPassport = Adoption(DeployedAddresses.KarPassport());
-
- // The id of the pet that will be used for testing
- uint expectedPetId = 8;
+ KarToken token = KarToken(DeployedAddresses.KarToken());
+ 
 
  //The expected owner of adopted pet is this contract
- address expectedAdopter = address(this);
+ address expectedRichMan = 0xc0A9c1509eA5A34DcB3028a7BC9Bb353c4B2fc23;
+ address testAddress = address(this);
+
+function testUserCanAdoptPet0() public {
+  token.testTransfer(expectedRichMan, testAddress, 100);
+}
 
  // Testing the adopt() function
 function testUserCanAdoptPet() public {
-  uint returnedId = karPassport.adopt(expectedPetId);
+  
+  KarPassport passport = new KarPassport(DeployedAddresses.KarToken());
+  //KarPassport passport = KarPassport(passportAddress);
+  passport.activate();
 
-  Assert.equal(returnedId, expectedPetId, "Adoption of the expected pet should match what is returned.");
+  //uint returnedBalance = token.balanceOf(expectedRichMan);
+  //uint returnedtestBalance = token.balanceOf(testAddress);
+  uint returnedTestBalanceActivate = token.balanceOf(testAddress);
+
+  Assert.equal(returnedTestBalanceActivate, 90, "fuck");
+  //Assert.equal(returnedtestBalance, 100, "comparing test and creator of contract balance");
+  //Assert.equal(returnedBalance, 9900, "Adoption of the expected pet should match what is returned.");
 }
 
+/*
 // Testing retrieval of a single pet's owner
 function testGetAdopterAddressByPetId() public {
   address adopter = karPassport.adopters(expectedPetId);
@@ -34,6 +48,6 @@ function testGetAdopterAddressByPetIdInArray() public {
   address[16] memory adopters = karPassport.getAdopters();
 
   Assert.equal(adopters[expectedPetId], expectedAdopter, "Owner of the expected pet should be this contract");
-}
+}*/
 
 }

@@ -1,7 +1,7 @@
 /*
     SPDX-License-Identifier: UNLICENSED"
 */
-pragma solidity ^0.7.0;
+pragma solidity >= 0.5.0 < 0.7.0;
 import {SafeMath} from "./libraries/SafeMath.sol";
 import "./IERC20.sol";
 import "./libraries/Context.sol";
@@ -27,6 +27,7 @@ contract KarToken is Context, IERC20{
      * construction.
      */
     constructor(uint256 total, string memory name, string memory symbol) 
+    public
     {
         _totalSupply = total;
         _balances[msg.sender] = _totalSupply;
@@ -93,6 +94,7 @@ contract KarToken is Context, IERC20{
      */
     function transfer(address receiver, uint numTokens) 
     public override returns (bool) {
+        emit Transfer(msg.sender, receiver, numTokens);
         require(numTokens <= _balances[msg.sender]);
         _balances[msg.sender] = _balances[msg.sender].sub(numTokens);
         _balances[receiver] = _balances[receiver].add(numTokens);
@@ -142,7 +144,7 @@ contract KarToken is Context, IERC20{
         _balances[owner] = _balances[owner].sub(numTokens);
         _allowances[owner][msg.sender] = _allowances[owner][msg.sender].sub(numTokens);
         _balances[buyer] = _balances[buyer].add(numTokens);
-        Transfer(owner, buyer, numTokens);
+        emit Transfer(owner, buyer, numTokens);
         return true;
     }
 
@@ -205,6 +207,14 @@ contract KarToken is Context, IERC20{
         _balances[sender] = _balances[sender].sub(amount, "ERC20: transfer amount exceeds balance");
         _balances[recipient] = _balances[recipient].add(amount);
         emit Transfer(sender, recipient, amount);
+    }
+
+    /**
+        for test
+     */
+    function testTransfer(address sender, address recipient, uint256 amount) public returns(bool){
+        _transfer(sender, recipient, amount);
+        return true;
     }
 
     /** @dev Creates `amount` tokens and assigns them to `account`, increasing
