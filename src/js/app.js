@@ -51,10 +51,22 @@ App = {
   
   
   initContract: function() {
+
+    $.getJSON('KarToken.json', function(data) {
+      // Get the necessary contract artifact file and instantiate it with truffle-contract
+      var KarArtifact = data;
+      App.contracts.KarToken = TruffleContract(KarArtifact);
+  
+      // Set the provider for our contract
+      App.contracts.KarToken.setProvider(App.web3Provider);
+
+      return true;
+    });
+
     $.getJSON('KarPassport.json', function(data) {
     // Get the necessary contract artifact file and instantiate it with truffle-contract
-    var AdoptionArtifact = data;
-    App.contracts.KarPassport = TruffleContract(AdoptionArtifact);
+    var KarArtifact = data;
+    App.contracts.KarPassport = TruffleContract(KarArtifact);
 
     // Set the provider for our contract
     App.contracts.KarPassport.setProvider(App.web3Provider);
@@ -70,18 +82,19 @@ App = {
   
   bindEvents: function() {
     $(document).on('click', '.btn-adopt', App.handleAdopt);
+    $(document).on('click', '.btn-create', App.handleCreate);    
   },
 
   
   
   
   markAdopted: function(adopters, account) {
-    var adoptionInstance;
+    var karInstance;
 
     App.contracts.KarPassport.deployed().then(function(instance) {
-        adoptionInstance = instance;
+        karInstance = instance;
 
-        return adoptionInstance.getAdopters.call();
+        return karInstance.getAdopters.call();
     }).then(function(adopters) {
         for (i = 0; i < adopters.length; i++) {
             if (adopters[i] !== '0x0000000000000000000000000000000000000000') {
@@ -93,14 +106,59 @@ App = {
     });
   },
 
-  
+  handleCreate: function(event) {
+    event.preventDefault();
+    //$('.panel-pet').eq(15).find('button').text('Success NO').attr('disabled', true);
+    //$('.panel-create').eq(1).find('button').text('Success NO').attr('disabled', true);
+
+    var passInstance;
+    var tokenInstance;
+
+    web3.eth.getAccounts(function(error, accounts) {
+        if (error) {
+            console.log(error);
+        }
+
+        var account = accounts[0];
+
+        App.contracts.KarToken.deployed().then(function(instance) {
+          tokenInstance = instance;
+            $('.panel-pet').eq(15).find('button').text('Success karToken deployed').attr('disabled', true);
+
+            App.contracts.KarPassport.deployed().then(function(instanceP) {
+              passInstance = instanceP;
+              $('.panel-pet').eq(15).find('button').text('Success KarPassport deployed').attr('disabled', true);
+              tokenInstance.approve(passInstance.address, 100, {from: account});
+              $('.panel-pet').eq(15).find('button').text('Success token delegate').attr('disabled', true);
+              var ret = passInstance.transferAllowedToken({from: account});
+              $('.panel-pet').eq(15).find('button').text('Success token transfer' + ret).attr('disabled', true);
+              
+              return 0;
+
+            }).catch(function(err) {
+              console.log(err.message);
+            });
+
+            // Execute adopt as a transaction by sending account
+            /*return KarToken.approve("name",
+              "id",
+              "brand",
+              "modele",
+              2020,
+              "numberPlate", {from: account});*/
+              $('.panel-pet').eq(15).find('button').text('Success create').attr('disabled', false);
+        }).catch(function(err) {
+            console.log(err.message);
+        });
+    });
+  },
   
   handleAdopt: function(event) {
     event.preventDefault();
 
     var petId = parseInt($(event.target).data('id'));
 
-    var adoptionInstance;
+    var karInstance;
 
     web3.eth.getAccounts(function(error, accounts) {
         if (error) {
@@ -110,10 +168,10 @@ App = {
         var account = accounts[0];
 
         App.contracts.KarPassport.deployed().then(function(instance) {
-            adoptionInstance = instance;
+            karInstance = instance;
 
             // Execute adopt as a transaction by sending account
-            return adoptionInstance.adopt(petId, {from: account});
+            return karInstance.adopt(petId, {from: account});
         }).then(function(result) {
             return App.markAdopted();
         }).catch(function(err) {
