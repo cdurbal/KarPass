@@ -53,17 +53,14 @@ contract KarPassport {
         mapping(uint => Owner) data;
     }
 
-    enum EventType { Insurance, Repairing, TechnicalControl, Accident, Upgrade }
+ 
 
     struct Event {
-        EventType typeEvent;
-        string description;
         address sender;
-        string interventions;
+        string description;
         uint256 date;
-        uint price;
-        string currency;
         uint256 expirationDate;
+        uint km;
         bool exists;
     }
 
@@ -149,9 +146,9 @@ contract KarPassport {
     /*
         Create a modifier that throws an error if the msg.sender has not the require token number.
     */
-    modifier requireLockedToken(uint numToken) {
+    modifier requireLockedToken(address sender, uint numToken) {
         require(
-            numToken<=_lockedBalance[msg.sender],
+            numToken<=_lockedBalance[sender],
             "Not enougth locked token"
         );
         _;
@@ -239,7 +236,7 @@ contract KarPassport {
         constructor
     */
     constructor(address tokenContractAddr)
-    public
+    public payable
     {
         _tokenContractAddr = tokenContractAddr;
     }
@@ -390,15 +387,13 @@ contract KarPassport {
      */
     function passportEvent(uint256 idPassport, uint eventIndex)
     public view requireExists(idPassport) requireEventExists(idPassport, eventIndex)
-    returns (EventType, string memory, address, string memory, uint256, uint, string memory, uint256) {
-         return (_passport[idPassport].events.data[eventIndex].typeEvent,
-                _passport[idPassport].events.data[eventIndex].description,
-                _passport[idPassport].events.data[eventIndex].sender,
-                _passport[idPassport].events.data[eventIndex].interventions,
-                _passport[idPassport].events.data[eventIndex].date,
-                _passport[idPassport].events.data[eventIndex].price,
-                _passport[idPassport].events.data[eventIndex].currency,
-                _passport[idPassport].events.data[eventIndex].expirationDate);
+    returns (address, string memory, uint256, uint256, uint) {
+        Event memory e = _passport[idPassport].events.data[eventIndex];
+         return (e.sender,
+                e.description,
+                e.date,
+                e.expirationDate,
+                e.km);
     }
 
     /**
@@ -406,15 +401,14 @@ contract KarPassport {
     */
     function passportWaitingEvents(uint256 idPassport, uint eventIndex)
     public view requireExists(idPassport) requireWaitingEventExists(idPassport, eventIndex)
-    returns (EventType, string memory, address, string memory, uint256, uint, string memory, uint256) {
-         return (_passport[idPassport].waitingEvents.data[eventIndex].typeEvent,
-                _passport[idPassport].waitingEvents.data[eventIndex].description,
-                _passport[idPassport].waitingEvents.data[eventIndex].sender,
-                _passport[idPassport].waitingEvents.data[eventIndex].interventions,
-                _passport[idPassport].waitingEvents.data[eventIndex].date,
-                _passport[idPassport].waitingEvents.data[eventIndex].price,
-                _passport[idPassport].waitingEvents.data[eventIndex].currency,
-                _passport[idPassport].waitingEvents.data[eventIndex].expirationDate);
+    returns (address, string memory, uint256, uint256, uint) {
+
+        Event memory e = _passport[idPassport].waitingEvents.data[eventIndex];
+         return (e.sender,
+                e.description,
+                e.date,
+                e.expirationDate,
+                e.km);
     }
 
     /**
@@ -438,25 +432,19 @@ contract KarPassport {
     * createEvent
     */
     function createEvent(uint256 idPassport,
-                            EventType typeEvent,
-                            string memory description,
-                            string memory interventions,
-                            uint256 date,
-                            uint price,
-                            string memory currency,
-                            uint256 expirationDate)
+                        string memory description,
+                        uint256 date,
+                        uint256 expirationDate,
+                        uint km)
     public requireToken(TOKEN_EVENT_LOCK) returns (bool){
         _lockToken(msg.sender, TOKEN_EVENT_LOCK);
 
         _passport[idPassport].waitingEvents.size++;
-        _passport[idPassport].waitingEvents.data[_passport[idPassport].waitingEvents.size].typeEvent = typeEvent;
-        _passport[idPassport].waitingEvents.data[_passport[idPassport].waitingEvents.size].description = description;
         _passport[idPassport].waitingEvents.data[_passport[idPassport].waitingEvents.size].sender = msg.sender;
-        _passport[idPassport].waitingEvents.data[_passport[idPassport].waitingEvents.size].interventions = interventions;
+        _passport[idPassport].waitingEvents.data[_passport[idPassport].waitingEvents.size].description = description;
         _passport[idPassport].waitingEvents.data[_passport[idPassport].waitingEvents.size].date = date;
-        _passport[idPassport].waitingEvents.data[_passport[idPassport].waitingEvents.size].price = price;
-        _passport[idPassport].waitingEvents.data[_passport[idPassport].waitingEvents.size].currency = currency;
         _passport[idPassport].waitingEvents.data[_passport[idPassport].waitingEvents.size].expirationDate = expirationDate;
+        _passport[idPassport].waitingEvents.data[_passport[idPassport].waitingEvents.size].km = km;
         _passport[idPassport].waitingEvents.data[_passport[idPassport].waitingEvents.size].exists = true;
 
         _passport[idPassport].waitingEvents.index.size++;
@@ -537,7 +525,7 @@ contract KarPassport {
     * _lockToken
     */
     function _lockToken(address sender, uint numToken)
-    public requireToken(numToken) returns (bool)
+    private requireToken(numToken) returns (bool)
     {
         _lockedBalance[sender] = _lockedBalance[sender].add(numToken);
         _balance[sender] = _balance[sender].sub(numToken);
@@ -547,7 +535,7 @@ contract KarPassport {
     * _unlockToken
     */
     function _unlockToken(address sender, uint numToken)
-    public requireLockedToken(numToken) returns (bool)
+    private requireLockedToken(sender, numToken) returns (bool)
     {
         _lockedBalance[sender] = _lockedBalance[sender].sub(numToken);
         _balance[sender] = _balance[sender].add(numToken);
@@ -568,18 +556,29 @@ contract KarPassport {
         return _balance[msg.sender];
     }
 
+    /**
+     * balance
+     */
+    function lockedBalance() public view returns (uint) {
+        return _lockedBalance[msg.sender];
+    }
+
+    /**
+     * passport
+     **/
     function passport(uint256 identifiant)
     public view requireExists(identifiant) returns (string memory, string memory, string memory, string memory, uint256, string memory, uint256, uint256, uint256)
     {
-        return (_passport[identifiant].identity.name,
-                _passport[identifiant].identity.id,
-                _passport[identifiant].identity.brand,
-                _passport[identifiant].identity.modele,
-                _passport[identifiant].identity.year,
-                _passport[identifiant].identity.numberPlate,
-                _passport[identifiant].km,
-                _passport[identifiant].technicalControlExpirationDate,
-                _passport[identifiant].insuranceExpirationDate);
+        Passport memory p = _passport[identifiant];
+        return (p.identity.name,
+                p.identity.id,
+                p.identity.brand,
+                p.identity.modele,
+                p.identity.year,
+                p.identity.numberPlate,
+                p.km,
+                p.technicalControlExpirationDate,
+                p.insuranceExpirationDate);
     }
 
 
