@@ -108,8 +108,6 @@ App = {
 
   handleCreate: function(event) {
     event.preventDefault();
-    //$('.panel-pet').eq(15).find('button').text('Success NO').attr('disabled', true);
-    //$('.panel-create').eq(1).find('button').text('Success NO').attr('disabled', true);
 
     var passInstance;
     var tokenInstance;
@@ -127,25 +125,19 @@ App = {
 
             App.contracts.KarPassport.deployed().then(function(instanceP) {
               passInstance = instanceP;
+              $('#petsRow').text('Success KarPassport deployed').attr('disabled', true);
               $('.panel-pet').eq(15).find('button').text('Success KarPassport deployed').attr('disabled', true);
               tokenInstance.approve(passInstance.address, 100, {from: account});
               $('.panel-pet').eq(15).find('button').text('Success token delegate').attr('disabled', true);
               var ret = passInstance.transferAllowedToken({from: account});
               $('.panel-pet').eq(15).find('button').text('Success token transfer' + ret).attr('disabled', true);
+              $('#petsRow').text('Success KarToken transfered').attr('disabled', true);
               
               return 0;
 
             }).catch(function(err) {
               console.log(err.message);
             });
-
-            // Execute adopt as a transaction by sending account
-            /*return KarToken.approve("name",
-              "id",
-              "brand",
-              "modele",
-              2020,
-              "numberPlate", {from: account});*/
               $('.panel-pet').eq(15).find('button').text('Success create').attr('disabled', false);
         }).catch(function(err) {
             console.log(err.message);
