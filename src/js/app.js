@@ -60,7 +60,7 @@ App = {
       // Set the provider for our contract
       App.contracts.KarToken.setProvider(App.web3Provider);
 
-      return true;
+      return App.displaySmartContract();
     });
 
     $.getJSON('KarPassport.json', function(data) {
@@ -72,7 +72,7 @@ App = {
     App.contracts.KarPassport.setProvider(App.web3Provider);
 
     // Use our contract to retrieve and mark the adopted pets
-    return App.markAdopted();
+    return true;
     });
 
     return App.bindEvents();
@@ -81,12 +81,9 @@ App = {
   
   
   bindEvents: function() {
-    $(document).on('click', '.btn-adopt', App.handleAdopt);
-    $(document).on('click', '.btn-create', App.handleCreate);    
+    $(document).on('click', '.btn-create', App.handleApprove);    
   },
 
-  
-  
   
   markAdopted: function(adopters, account) {
     var karInstance;
@@ -105,8 +102,44 @@ App = {
         console.log(err.message);
     });
   },
+  
 
-  handleCreate: function(event) {
+
+  displaySmartContract: function() {
+
+    var passInstance;
+    var tokenInstance;
+
+    web3.eth.getAccounts(function(error, accounts) {
+        if (error) {
+            console.log(error);
+        }
+
+        var account = accounts[0];
+
+        App.contracts.KarToken.deployed().then(function(instance) {
+          tokenInstance = instance;
+          $('.panel-pet').eq(15).find('button').text('Success karToken deployed').attr('disabled', true);
+          $('#address').text(account);
+          tokenInstance.balanceOf(account, {from: account}).then(function (bal) {
+            $('#balance').text(bal.toNumber());
+            console.log(bal.toNumber());
+          });
+          
+          App.contracts.KarPassport.deployed().then(function(instanceP) {
+            passInstance = instanceP;
+            $('#petsRow').text('Success KarPassport deployed').attr('disabled', true);
+          }).catch(function(err) {
+            console.log(err.message);
+          });
+          $('.panel-pet').eq(15).find('button').text('Success create').attr('disabled', false);
+        }).catch(function(err) {
+            console.log(err.message);
+        });
+    });
+  },
+
+  handleApprove: function(event) {
     event.preventDefault();
 
     var passInstance;
@@ -121,19 +154,19 @@ App = {
 
         App.contracts.KarToken.deployed().then(function(instance) {
           tokenInstance = instance;
-            $('.panel-pet').eq(15).find('button').text('Success karToken deployed').attr('disabled', true);
-
             App.contracts.KarPassport.deployed().then(function(instanceP) {
               passInstance = instanceP;
-              $('#petsRow').text('Success KarPassport deployed').attr('disabled', true);
-              $('.panel-pet').eq(15).find('button').text('Success KarPassport deployed').attr('disabled', true);
-              tokenInstance.approve(passInstance.address, 100, {from: account});
-              $('.panel-pet').eq(15).find('button').text('Success token delegate').attr('disabled', true);
-              var ret = passInstance.transferAllowedToken({from: account});
-              $('.panel-pet').eq(15).find('button').text('Success token transfer' + ret).attr('disabled', true);
-              $('#petsRow').text('Success KarToken transfered').attr('disabled', true);
               
-              return 0;
+              //$('.panel-pet').eq(15).find('button').text('Success KarPassport deployed').attr('disabled', true);
+              tokenInstance.approve(passInstance.address, 100, {from: account}).then(function() {
+                passInstance.transferAllowedToken({from: account});
+              }).catch(function(err) {
+                console.log(err.message);
+              });
+              //$('.panel-pet').eq(15).find('button').text('Success token delegate').attr('disabled', true);
+              //var ret = passInstance.transferAllowedToken({from: account});
+              //$('.panel-pet').eq(15).find('button').text('Success token transfer' + ret).attr('disabled', true);
+              //$('#petsRow').text('Success KarToken transfered').attr('disabled', true);
 
             }).catch(function(err) {
               console.log(err.message);

@@ -278,6 +278,14 @@ contract KarPassport {
     /**
      * deletePassport
      */
+    function totalPassport(address owner)
+    public view returns(uint){
+        return _passportIdentifiants[owner].size;
+    }
+
+    /**
+     * deletePassport
+     */
     function deletePassport(uint256 passportId)
     public requireOwner(passportId) returns (bool){
 

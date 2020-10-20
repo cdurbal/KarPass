@@ -26,11 +26,11 @@ contract KarToken is Context, IERC20{
      * All three of these values are immutable: they can only be set once during
      * construction.
      */
-    constructor(uint256 total, string memory name, string memory symbol) 
+    constructor(uint256 total, string memory name, string memory symbol, address sender) 
     public
     {
         _totalSupply = total;
-        _balances[msg.sender] = _totalSupply;
+        _balances[sender] = _totalSupply;
         _name = name;
         _symbol = symbol;
         _decimals = 18;
