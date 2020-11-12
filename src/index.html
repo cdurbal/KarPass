@@ -28,13 +28,14 @@
       </div>
 
       <div id="Tokens">
-         <div class="col-sm-6 col-md-4 col-lg-3">
+         <div class="col-sm-6 col-md-4 col-lg-4">
            <div class="panel panel-default panel-pet">
              <div class="panel-heading">
                <h3 class="panel-title">KarGain Smart Contract</h3>
              </div>
              <div class="panel-body">
                <strong>Address</strong>: <span id="address" class="address">0x123456789</span> <br/>
+               <strong>Account</strong>: <span id="account" class="account">11</span> <span>KAR$</span> <br/>
                <strong>Balance</strong>: <span id="balance" class="balance">11</span> <span>KAR$</span> <br/>
                <strong>Number of passport</strong>: <span id="total" class="total">2</span> <br/><br/>
                <strong>Transfer</strong>: <input type="number" id="token" name="token" min="10" max="100000">  <span>KAR$</span> <br/><br/>
@@ -45,27 +46,27 @@
       </div>
       
       <div id="passport">
-         <div class="col-sm-6 col-md-4 col-lg-3">
+         <div class="col-sm-6 col-md-4 col-lg-4">
            <div class="panel panel-default panel-pet">
              <div class="panel-heading">
                <h3 class="panel-title">KarPassport</h3>
              </div>
              <div class="panel-body">
-               <strong>Name</strong>: <input type="text" id="name" name="name" required minlength="1" maxlength="12" size="25"><br/><br/>
+               <strong>Name</strong>: <input type="text" id="name" name="name" required minlength="1" maxlength="30" size="25"><br/><br/>
                <strong>VIN</strong>: <input type="text" id="VIN" name="VIN" required minlength="1" maxlength="128" size="25"><br/><br/>
-               <strong>Brand</strong>: <input type="text" id="Brand" name="Brand" required minlength="1" maxlength="128" size="25"><br/><br/>
+               <strong>Brand</strong>: <input type="text" id="brand" name="Brand" required minlength="1" maxlength="128" size="25"><br/><br/>
                <strong>Modele</strong>: <input type="text" id="modele" name="modele" required minlength="1" maxlength="128" size="25"><br/><br/>
                <strong>Realease date</strong>: <input type="date" id="releaseDate" name="release Date" value="2020-01-01" min="1980-01-01"><br/><br/>
-               <strong>Cost</strong>: <span id="cost" class="cost">10</span><span> KAR$</span> <br/><br/>
+               <strong>Cost</strong>: <span id="cost" class="cost">100</span><span> KAR$</span> <br/><br/>
                
-               <button class="btn btn-default btn-adopt" type="button" id="create">Create</button>
+               <button class="btn btn-default btn-create" type="button" id="create">Create</button>
              </div>
            </div>
          </div>
       </div>
 
       <div id="event">
-         <div class="col-sm-6 col-md-4 col-lg-3">
+         <div class="col-sm-6 col-md-4 col-lg-4">
            <div class="panel panel-default panel-pet">
              <div class="panel-heading">
                <h3 class="panel-title">KarEvent</h3>
@@ -77,7 +78,7 @@
                <strong>Odometer</strong>: <input type="number" id="odometer" name="odometer" ><span> Km</span> <br/><br/>
                <strong>Bail</strong>: <span id="bail" class="bail">10</span><span> KAR$</span> <br/><br/>
                
-               <button class="btn btn-default btn-adopt" type="button" id="send">Send</button>
+               <button class="btn btn-default btn-send" type="button" id="send">Send</button>
              </div>
            </div>
          </div>
@@ -91,12 +92,24 @@
           <br/>
         </div>
       </div>
+      <div id="passportsRow" class="row" style="margin: 2%;">
+        <!-- PASSPORTS LOAD HERE -->
+      </div>
+    </div>
+
+      <div class="row" style="display: none;">
+        <div class="col-xs-12 col-sm-8 col-sm-push-2">
+          <h1 class="text-center">My Passports</h1>
+          <hr/>
+          <br/>
+        </div>
+      </div>
       <div id="petsRow" class="row">
         <!-- PETS LOAD HERE -->
       </div>
     </div>
     
-    <div id="passTemplate">
+    <div id="passTemplate" style="display: none;">
       <div class="col-sm-6 col-md-4 col-lg-3">
         <div class="panel panel-default panel-pet">
           <div class="panel-heading">
@@ -111,9 +124,13 @@
             <strong>Release</strong>: <span class="pass-release">2017</span> <br/><br/>
             
             <strong>Events</strong><br/>
-            <strong>2020-01-01</strong>: <span class="pass-name">Repairing</span><br/>
-            <strong>2019-01-01</strong>: <span class="pass-name">Repairing</span><br/>
-            <strong>2018-01-01</strong>: <span class="pass-name">Repairing</span><br/>
+            <strong>2020-01-01</strong>: <span class="pass-event">Repairing</span><br/>
+            <strong>2019-01-01</strong>: <span class="pass-event">Repairing</span><br/>
+            <strong>2018-01-01</strong>: <span class="pass-event">Repairing</span><br/>
+
+            <br/><br/>
+            <button class="btn btn-default btn-transfer" type="button" data-id="0">Transfer</button>
+            <button class="btn btn-default btn-delete" type="button" data-id="0">Delete</button>
           </div>
         </div>
       </div>

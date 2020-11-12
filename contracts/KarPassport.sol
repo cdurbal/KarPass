@@ -560,15 +560,15 @@ contract KarPassport {
     /**
      * balance
      */
-    function balance() public view returns (uint) {
-        return _balance[msg.sender];
+    function balanceOf(address sender) public view returns (uint) {
+        return _balance[sender];
     }
 
     /**
      * balance
      */
-    function lockedBalance() public view returns (uint) {
-        return _lockedBalance[msg.sender];
+    function lockedBalance(address sender) public view returns (uint) {
+        return _lockedBalance[sender];
     }
 
     /**
